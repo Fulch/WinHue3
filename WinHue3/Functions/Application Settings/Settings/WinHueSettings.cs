@@ -20,6 +20,7 @@ namespace WinHue3.Functions.Application_Settings.Settings
 
         static WinHueSettings()
         {
+            
             LoadAllSettings();
 
         }
@@ -210,6 +211,12 @@ namespace WinHue3.Functions.Application_Settings.Settings
                 string result = JsonConvert.SerializeObject(hotkeys, new JsonSerializerSettings() { NullValueHandling = NullValueHandling.Ignore, Formatting = Formatting.Indented});
                 log.Debug($@"Saving hotkeys : {hotkeys}");
                 string filepath = Path.Combine(path, "WinHue\\WinHueHotkeys.set");
+                if(File.Exists(filepath))
+                {
+                    log.Info("Backuping WinHueHotkeys.set file to WinHueHotkeys.set.bak");
+                    File.Copy(filepath, filepath + ".bak", true);
+                }
+
                 if (CreateWinHueDirectory())
                 {
                     File.WriteAllText(filepath, result);
@@ -218,7 +225,7 @@ namespace WinHue3.Functions.Application_Settings.Settings
             }
             catch (Exception ex)
             {
-                settings = new CustomSettings();
+                hotkeys = new CustomHotkeys();
                 ret = false;
                 log.Error("Error while saving the hotkeys.", ex);
 
@@ -242,6 +249,11 @@ namespace WinHue3.Functions.Application_Settings.Settings
                 StreamReader sr = File.OpenText(filepath);
                 log.Debug("File open.");
                 string settingsString = sr.ReadToEnd();
+                if (settingsString == string.Empty)
+                {
+                    log.Warn("Hotkey settings file is empty. It will be ignored.");
+                    return false;
+                }
                 log.Debug($@"Loading hotkeys : {settingsString}");
                 sr.Close();
                 log.Debug("Deserializing the settings file.");
@@ -250,7 +262,7 @@ namespace WinHue3.Functions.Application_Settings.Settings
             }
             catch (Exception ex)
             {
-                settings = new CustomSettings();
+                hotkeys = new CustomHotkeys();
                 result = false;
                 log.Error("Error while loading the hotkeys.", ex);
             }
@@ -269,6 +281,12 @@ namespace WinHue3.Functions.Application_Settings.Settings
                 string result = JsonConvert.SerializeObject(bridges, new JsonSerializerSettings() { NullValueHandling = NullValueHandling.Ignore, Formatting = Formatting.Indented });
                 log.Debug($@"Saving bridge settings : {bridges}");
                 string filepath = Path.Combine(path, "WinHue\\WinHueBridges.set");
+                if (File.Exists(filepath))
+                {
+                    log.Info("Backuping WinHueBridge.set file to WinHueBridge.set.bak");
+                    File.Copy(filepath, filepath + ".bak", true);
+                }
+                
                 if (CreateWinHueDirectory())
                 {
                     File.WriteAllText(filepath, result);
@@ -277,7 +295,7 @@ namespace WinHue3.Functions.Application_Settings.Settings
             }
             catch (Exception ex)
             {
-                settings = new CustomSettings();
+                bridges = new CustomBridges();
                 ret = false;
                 log.Error("Error while saving the bridge settings.", ex);
 
@@ -297,10 +315,16 @@ namespace WinHue3.Functions.Application_Settings.Settings
             {
                 string filepath = Path.Combine(path, "WinHue\\WinHueBridges.set");
                 if (!File.Exists(filepath)) return result;
+               // if (new FileInfo(filepath).Length == 0) return result;
                 log.Debug("Trying to open bridge settings file...");
                 StreamReader sr = File.OpenText(filepath);
                 log.Debug("File open.");
                 string settingsString = sr.ReadToEnd();
+                if (settingsString == string.Empty)
+                {
+                    log.Warn("Bridge settings file is empty. It will be ignored.");
+                    return false;
+                } 
                 log.Debug($@"Loading bridge settings : {settingsString}");
                 sr.Close();
                 log.Debug("Deserializing the settings file.");
@@ -309,7 +333,7 @@ namespace WinHue3.Functions.Application_Settings.Settings
             }
             catch (Exception ex)
             {
-                settings = new CustomSettings();
+                bridges = new CustomBridges();
                 result = false;
                 log.Error("Error while loading the bridge settings.", ex);
             }
@@ -328,6 +352,12 @@ namespace WinHue3.Functions.Application_Settings.Settings
                 string result = JsonConvert.SerializeObject(settings ,new JsonSerializerSettings() { NullValueHandling = NullValueHandling.Ignore, Formatting = Formatting.Indented });
                 log.Debug($@"Saving settings : {settings}");
                 string filepath = Path.Combine(path, "WinHue\\WinHueSettings.set");
+                if(File.Exists(filepath))
+                {
+                    log.Info("Backuping WinHueSettings.set file to WinHueSettings.set.bak");
+                    File.Copy(filepath, filepath + ".bak", true);
+                }
+                
                 if (CreateWinHueDirectory())
                 {
                     File.WriteAllText(filepath, result);
@@ -360,6 +390,11 @@ namespace WinHue3.Functions.Application_Settings.Settings
                 StreamReader sr = File.OpenText(filepath);
                 log.Debug("File open.");
                 string settingsString = sr.ReadToEnd();
+                if (settingsString == string.Empty)
+                {
+                    log.Warn("WinHue settings file is empty. It will be ignored.");
+                    return false;
+                }
                 log.Debug($@"Loading settings : {settingsString}");
                 sr.Close();         
                 log.Debug("Deserializing the settings file.");    

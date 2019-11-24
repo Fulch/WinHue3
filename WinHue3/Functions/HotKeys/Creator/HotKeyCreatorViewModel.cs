@@ -10,15 +10,14 @@ using System.Windows.Media;
 using System.Windows.Threading;
 using log4net;
 using Microsoft.Win32;
-using WinHue3.ExtensionMethods;
 using WinHue3.Functions.Application_Settings.Settings;
 using WinHue3.Functions.HotKeys.Validation;
-using WinHue3.Philips_Hue.BridgeObject;
 using WinHue3.Philips_Hue.HueObjects.Common;
 using WinHue3.Philips_Hue.HueObjects.GroupObject;
 using WinHue3.Philips_Hue.HueObjects.LightObject;
 using WinHue3.Philips_Hue.HueObjects.SceneObject;
 using WinHue3.Utils;
+using WinHue3.Philips_Hue.BridgeObject;
 
 namespace WinHue3.Functions.HotKeys.Creator
 {
@@ -32,13 +31,13 @@ namespace WinHue3.Functions.HotKeys.Creator
         private IBaseProperties _propertyObject;
         private ObservableCollection<HotKey> _listHotKeys;
         private readonly DispatcherTimer _hotkeyrecordTimer;
-        private Bridge _bridge;
         private HotKeyCreatorModel _hotKeyModel;
         private HotKey _selectedHotKey;
         private Type _objectype;
         private bool _canRecordKeyUp;
         private bool _isGeneric;
         private OpenFileDialog ofd;
+        private Bridge _bridge;
 
         public HotKeyCreatorViewModel()
         {
@@ -47,7 +46,6 @@ namespace WinHue3.Functions.HotKeys.Creator
             _listHotKeys = new ObservableCollection<HotKey>();
             _hotkeyrecordTimer.Interval = new TimeSpan(0, 0, 0, 10);
             _hotkeyrecordTimer.Tick += _hotkeyrecordTimer_Tick;
-            _listHotKeys = new ObservableCollection<HotKey>(WinHueSettings.hotkeys.listHotKeys);
             ofd = new OpenFileDialog
             {
                 DefaultExt = "exe",
@@ -58,11 +56,12 @@ namespace WinHue3.Functions.HotKeys.Creator
 
         public bool NotGeneric => !_isGeneric;
 
-        public async Task Initialize(Bridge bridge)
+        public async Task Initialize(Bridge bridge, ObservableCollection<HotKey> listHotkeys)
         {
-            CanRecordKeyUp = false;
             _bridge = bridge;
-            _listAvailbleHueObjects = await HueObjectHelper.GetBridgeDataStoreAsyncTask(_bridge);
+            ListHotKeys = listHotkeys;
+            CanRecordKeyUp = false;
+            _listAvailbleHueObjects = await _bridge.GetAllObjectsAsync();
         }
 
         public IBaseProperties PropertyGridObject
@@ -177,7 +176,7 @@ namespace WinHue3.Functions.HotKeys.Creator
             bool valid = false;
             if (_propertyObject != null)
             {
-                PropertyInfo[] prop = _propertyObject.GetType().GetHueProperties();
+                PropertyInfo[] prop = _propertyObject.GetType().GetProperties(BindingFlags.Instance | BindingFlags.Public | BindingFlags.DeclaredOnly);
                 foreach (PropertyInfo p in prop)
                 {
                     if (p.GetValue(_propertyObject) != null)
@@ -211,7 +210,6 @@ namespace WinHue3.Functions.HotKeys.Creator
                     hotkey.objecType = ObjectType;
 
                 }
-                /*
                 if (!HotkeyAlreadyExists(hotkey, out HotKey existingKey))
                 {
                     HotKeyHandle hkh = new HotKeyHandle(hotkey, null);
@@ -240,7 +238,6 @@ namespace WinHue3.Functions.HotKeys.Creator
                         Clearfields();
                     }
                 }
-                */
                 RaisePropertyChanged("ListHotKeys");
             }
             else

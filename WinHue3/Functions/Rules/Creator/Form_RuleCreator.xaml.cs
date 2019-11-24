@@ -1,9 +1,8 @@
-﻿
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using System.Windows;
+using WinHue3.Philips_Hue.BridgeObject;
 using WinHue3.Philips_Hue.HueObjects.RuleObject;
 using WinHue3.Resources;
-using Bridge = WinHue3.Philips_Hue.BridgeObject.Bridge;
 
 namespace WinHue3.Functions.Rules.Creator
 {
@@ -13,30 +12,30 @@ namespace WinHue3.Functions.Rules.Creator
     public partial class Form_RuleCreator : Window
     {
         private RuleCreatorViewModel _rcvm;
-        private Bridge _bridge;
         private string _id;
+        private Bridge _bridge;
 
-        public Form_RuleCreator(Bridge bridge)
+        public Form_RuleCreator()
         {
             InitializeComponent();
             _rcvm = DataContext as RuleCreatorViewModel;
-            _bridge = bridge;
             _id = null;
             Title = GUI.RuleCreatorForm_Create;
         }
 
-        public Form_RuleCreator(Bridge bridge, Rule modifiedrule)
+        public Form_RuleCreator(Rule modifiedrule)
         {
             InitializeComponent();
             _rcvm = DataContext as RuleCreatorViewModel;
-            _bridge = bridge;            
+        
             _rcvm.Rule = modifiedrule;
             _id = modifiedrule.Id;
             Title = $"{GUI.RuleCreatorForm_Editing} {modifiedrule.name}";
         }
 
-        public async Task Initialize()
+        public async Task Initialize(Bridge bridge)
         {
+            _bridge = bridge;
             await _rcvm.Initialize(_bridge);
         }
 
@@ -53,7 +52,7 @@ namespace WinHue3.Functions.Rules.Creator
             {
                 Rule _newrule = _rcvm.Rule;
                 _newrule.Id = _id;
-                result =_bridge.ModifyObject(_newrule);
+                result = _bridge.ModifyObject(_newrule);
 
             }
             else

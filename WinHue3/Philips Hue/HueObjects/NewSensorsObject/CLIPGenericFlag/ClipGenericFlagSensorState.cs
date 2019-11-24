@@ -1,5 +1,5 @@
 ﻿using System.ComponentModel;
-using System.Runtime.Serialization;
+using Newtonsoft.Json;
 using WinHue3.Philips_Hue.HueObjects.Common;
 using WinHue3.Utils;
 
@@ -9,7 +9,7 @@ namespace WinHue3.Philips_Hue.HueObjects.NewSensorsObject.CLIPGenericFlag
     /// <summary>
     /// Sensor State.
     /// </summary>
-    [DataContract]
+    [JsonObject]
     public class ClipGenericFlagSensorState : ValidatableBindableBase, ISensorStateBase
     {
         private bool _flag;
@@ -17,7 +17,6 @@ namespace WinHue3.Philips_Hue.HueObjects.NewSensorsObject.CLIPGenericFlag
         /// <summary>
         /// url.
         /// </summary>
-        [HueProperty,DataMember]
         public bool flag
         {
             get => _flag;
@@ -26,7 +25,7 @@ namespace WinHue3.Philips_Hue.HueObjects.NewSensorsObject.CLIPGenericFlag
 
         private string _lastupdated;
 
-        [HueProperty, DataMember, ReadOnly(true)]
+        [DontSerialize,ReadOnly(true)]
         public string lastupdated
         {
             get => _lastupdated;

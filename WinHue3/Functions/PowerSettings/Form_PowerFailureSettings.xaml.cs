@@ -22,11 +22,15 @@ namespace WinHue3.Functions.PowerSettings
     {
         private PowerFailureSettingsViewModel pfvm;
 
-        public Form_PowerFailureSettings(Bridge bridge)
+        public Form_PowerFailureSettings()
         {
             InitializeComponent();
             pfvm = DataContext as PowerFailureSettingsViewModel;
-            pfvm.CurrentBridge = bridge;
+        }
+
+        public async Task Initialize(Bridge bridge)
+        {
+            await pfvm.Initialize(bridge);
         }
 
         private void BtnClose_Click(object sender, RoutedEventArgs e)

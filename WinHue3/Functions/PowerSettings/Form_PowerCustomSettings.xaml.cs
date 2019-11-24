@@ -1,18 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
+﻿using System.Windows;
 using WinHue3.Philips_Hue.BridgeObject;
 using WinHue3.Philips_Hue.HueObjects.LightObject;
+
 
 namespace WinHue3.Functions.PowerSettings
 {
@@ -23,10 +12,9 @@ namespace WinHue3.Functions.PowerSettings
     {
 
         private PowerCustomSettingsViewModel pfsvm;
-        private Bridge _bridge;
         private string _id;
-
-        public Form_PowerCustomSettings(Bridge bridge, PowerCustomSettings lightstate, string id)
+        private Bridge _bridge;
+        public Form_PowerCustomSettings(Bridge bridge,PowerCustomSettings lightstate, string id)
         {
             InitializeComponent();
             _bridge = bridge;

@@ -1,8 +1,11 @@
 ﻿using Newtonsoft.Json;
 using System.ComponentModel;
 using System.Runtime.Serialization;
+using System.Windows.Forms;
 using System.Windows.Media;
-using WinHue3.Philips_Hue.Communication;
+using WinHue3.Functions.Application_Settings.Settings;
+using WinHue3.Interface;
+using WinHue3.Philips_Hue.BridgeObject.Entertainment_API;
 using WinHue3.Philips_Hue.HueObjects.Common;
 using WinHue3.Utils;
 using Xceed.Wpf.Toolkit.PropertyGrid.Attributes;
@@ -12,7 +15,7 @@ namespace WinHue3.Philips_Hue.HueObjects.GroupObject
     /// <summary>
     /// Group Class.
     /// </summary>
-    [DataContract, HueType("groups")]
+    [JsonObject]
     public class Group : ValidatableBindableBase, IHueObject
     {
         private string _name;
@@ -26,11 +29,14 @@ namespace WinHue3.Philips_Hue.HueObjects.GroupObject
         private string _uniqueid;
         private string _class;
         private bool _visible;
+        private StringCollection _sensors;
+        private Location _locations;
+        private Stream _stream;
 
         /// <summary>
         /// Image of the group.
         /// </summary>
-        [DataMember, Category("Group Properties"), Description("Image of the group"), Browsable(false), JsonIgnore]
+        [Category("Group Properties"), Description("Image of the group"), Browsable(false), JsonIgnore]
         public ImageSource Image
         {
             get => _image;
@@ -40,7 +46,7 @@ namespace WinHue3.Philips_Hue.HueObjects.GroupObject
         /// <summary>
         /// ID of the group.
         /// </summary>
-        [DataMember, Category("Group Properties"), Description("ID of the group"), JsonIgnore]
+        [Category("Group Properties"), Description("ID of the group"), JsonIgnore]
         public string Id
         {
             get => _id;
@@ -50,14 +56,14 @@ namespace WinHue3.Philips_Hue.HueObjects.GroupObject
         /// <summary>
         /// Action (State) of the group
         /// </summary>
-        [HueProperty, DataMember, Category("Action"), Description("Action"), ExpandableObject, ReadOnly(true)]
+        [Category("Action"), Description("Action"), ExpandableObject, DontSerialize]
         public Action action
         {
             get => _action;
             set => SetProperty(ref _action,value);
         }
 
-        [HueProperty, DataMember, Category("State"), Description("State"), ExpandableObject, ReadOnly(true)]
+        [Category("State"), Description("State"), ExpandableObject, DontSerialize]
         public GroupState state
         {
             get => _state;
@@ -67,7 +73,7 @@ namespace WinHue3.Philips_Hue.HueObjects.GroupObject
         /// <summary>
         /// List of lights in the group.
         /// </summary>
-        [HueProperty, DataMember, Category("Group Properties"), Description("Lights in the group"), ExpandableObject]
+        [Category("Group Properties"), Description("Lights in the group"), ExpandableObject]
         public StringCollection lights
         {
             get => _lights;
@@ -77,7 +83,7 @@ namespace WinHue3.Philips_Hue.HueObjects.GroupObject
         /// <summary>
         /// Group name.
         /// </summary>
-        [HueProperty, DataMember, Category("Group Properties"), Description("Name of the group")]
+        [Category("Group Properties"), Description("Name of the group")]
         public string name
         {
             get => _name;
@@ -87,7 +93,7 @@ namespace WinHue3.Philips_Hue.HueObjects.GroupObject
         /// <summary>
         /// Type of the group
         /// </summary>
-        [HueProperty, DataMember, Category("Group Properties"), Description("The type of group"),CreateOnly]
+        [Category("Group Properties"), Description("The type of group"),CreateOnly]
         public string type
         {
             get => _type;
@@ -97,7 +103,7 @@ namespace WinHue3.Philips_Hue.HueObjects.GroupObject
         /// <summary>
         /// Model ID
         /// </summary>
-        [HueProperty, DataMember, Category("Group Properties"), Description("Model id of the group"), ReadOnly(true)]
+        [Category("Group Properties"), Description("Model id of the group"), DontSerialize]
         public string modelid
         {
             get => _modelid;
@@ -107,7 +113,7 @@ namespace WinHue3.Philips_Hue.HueObjects.GroupObject
         /// <summary>
         /// Unique ID
         /// </summary>
-        [HueProperty, DataMember, Category("Group Properties"), Description("Unique id of group"), ReadOnly(true)]
+        [Category("Group Properties"), Description("Unique id of group"), DontSerialize]
         public string uniqueid
         {
             get => _uniqueid;
@@ -117,11 +123,78 @@ namespace WinHue3.Philips_Hue.HueObjects.GroupObject
         /// <summary>
         /// Class
         /// </summary>
-        [HueProperty, DataMember, Category("Group Properties"), Description("Class of the group")]
+        [Category("Group Properties"), Description("Class of the group")]
         public string @class
         {
             get => _class;
             set => SetProperty(ref _class,value);
+        }
+
+        [Category("Group Properties"), Description("List of sensors in group")]
+        public StringCollection sensors
+        {
+            get => _sensors;
+            set => SetProperty(ref _sensors, value);
+        }
+
+        [JsonIgnore, Browsable(false)]
+        public bool visible
+        {
+            get => _visible;
+            set => SetProperty(ref _visible, value);
+        }
+
+        [Category("Streaming"), Description("List of locations of lights in the group (For entertainment mode only)"),ExpandableObject­, DontSerialize]
+        public Location Locations
+        {
+            get => _locations;
+            set => SetProperty(ref _locations, value);
+
+        }
+
+        [Category("Streaming"), Description("Streaming status and settings"), ExpandableObject]
+        public Stream stream
+        {
+            get => _stream;
+            set => SetProperty(ref _stream, value);
+        }
+
+        [OnDeserialized]
+        void OnDeserialized(StreamingContext ctx)
+        {
+            RefreshImage();
+                
+
+        }
+
+        public void RefreshImage()
+        {
+
+            switch (type)
+            {
+                case "Entertainment":
+                    if (state.all_on.GetValueOrDefault())
+                        Image = GDIManager.CreateImageSourceFromImage(Properties.Resources.entertainment_on);
+                    else if (state.any_on.GetValueOrDefault())
+                        Image = GDIManager.CreateImageSourceFromImage(Properties.Resources.entertainment_on);
+                    else
+                        Image = GDIManager.CreateImageSourceFromImage(Properties.Resources.entertainment_off);
+                    break;
+                default:
+                    if (state.all_on.GetValueOrDefault())
+                        Image = GDIManager.CreateImageSourceFromImage(Properties.Resources.HueGroupOn_Large);
+                    else if (state.any_on.GetValueOrDefault())
+                        Image = GDIManager.CreateImageSourceFromImage(Properties.Resources.HueGroupSome_Large);
+                    else
+                        Image = GDIManager.CreateImageSourceFromImage(Properties.Resources.HueGroupOff_Large);
+                    break;
+            }
+
+        }
+
+        public override bool Equals(object obj)
+        {
+            return obj is Group hueObject && hueObject.Id == Id;
         }
 
         /// <summary>
@@ -130,7 +203,7 @@ namespace WinHue3.Philips_Hue.HueObjects.GroupObject
         /// <returns></returns>
         public override string ToString()
         {
-            return Serializer.SerializeToJson(this);
+            return name;
         }
 
         public object Clone()
@@ -138,11 +211,11 @@ namespace WinHue3.Philips_Hue.HueObjects.GroupObject
             return MemberwiseClone();
         }
 
-        [DataMember(EmitDefaultValue = false, IsRequired = false), ReadOnly(true), JsonIgnore, Browsable(false)]
-        public bool visible
+        public override int GetHashCode()
         {
-            get => _visible;
-            set => SetProperty(ref _visible, value);
+            return base.GetHashCode();
         }
+
+
     }
 }

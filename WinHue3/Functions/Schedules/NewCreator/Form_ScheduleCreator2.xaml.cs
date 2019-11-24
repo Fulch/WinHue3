@@ -1,6 +1,5 @@
 ﻿using System.Threading.Tasks;
 using System.Windows;
-using WinHue3.Functions.BridgePairing;
 using WinHue3.Philips_Hue.BridgeObject;
 using WinHue3.Philips_Hue.HueObjects.ScheduleObject;
 using WinHue3.Utils;
@@ -14,9 +13,9 @@ namespace WinHue3.Functions.Schedules.NewCreator
     {
         private static readonly log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
         public ScheduleCreatorViewModel _scvm;
-        private Bridge _bridge;
         private bool _isEditing = false;
         private string _id = string.Empty;
+        private Bridge _bridge;
 
         public Form_ScheduleCreator2()
         {
@@ -28,7 +27,7 @@ namespace WinHue3.Functions.Schedules.NewCreator
         public async Task Initialize(Bridge bridge)
         {
             _bridge = bridge;
-            await _scvm.Initialize(_bridge);
+            await _scvm.Initialize(bridge);
         }
 
         public void EditSchedule(Schedule sc)

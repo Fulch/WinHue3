@@ -19,7 +19,7 @@ namespace WinHue3.Resources {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "15.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "16.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     public class GUI {
@@ -93,6 +93,24 @@ namespace WinHue3.Resources {
         public static string AllObjects {
             get {
                 return ResourceManager.GetString("AllObjects", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to All On/Off settings.
+        /// </summary>
+        public static string AllOnOffSettings {
+            get {
+                return ResourceManager.GetString("AllOnOffSettings", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Available Lights.
+        /// </summary>
+        public static string AvailableLights {
+            get {
+                return ResourceManager.GetString("AvailableLights", resourceCulture);
             }
         }
         
@@ -691,6 +709,15 @@ namespace WinHue3.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Remove.
+        /// </summary>
+        public static string Button_Remove {
+            get {
+                return ResourceManager.GetString("Button_Remove", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Save.
         /// </summary>
         public static string Button_Save {
@@ -705,6 +732,33 @@ namespace WinHue3.Resources {
         public static string Button_Select {
             get {
                 return ResourceManager.GetString("Button_Select", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to (Choose the operator).
+        /// </summary>
+        public static string ChooseOperator {
+            get {
+                return ResourceManager.GetString("ChooseOperator", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Copy.
+        /// </summary>
+        public static string Copy {
+            get {
+                return ResourceManager.GetString("Copy", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Cut.
+        /// </summary>
+        public static string Cut {
+            get {
+                return ResourceManager.GetString("Cut", resourceCulture);
             }
         }
         
@@ -790,6 +844,15 @@ namespace WinHue3.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Press enter to set value.
+        /// </summary>
+        public static string EnterPressedTooltip {
+            get {
+                return ResourceManager.GetString("EnterPressedTooltip", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Coordinates.
         /// </summary>
         public static string EntertainmentCreatorForm_Coordinates {
@@ -817,11 +880,83 @@ namespace WinHue3.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Entertainment Lights.
+        /// </summary>
+        public static string EntertainmentLights {
+            get {
+                return ResourceManager.GetString("EntertainmentLights", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Error.
+        /// </summary>
+        public static string Error {
+            get {
+                return ResourceManager.GetString("Error", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Error content :.
+        /// </summary>
+        public static string ErrorContent {
+            get {
+                return ResourceManager.GetString("ErrorContent", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Sorry but an unexpected exception occured. Please report the exception on the support website so the developper can fix the issues. Please include the most recent log located in the logs folder..
+        /// </summary>
+        public static string ErrorMessage {
+            get {
+                return ResourceManager.GetString("ErrorMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Event Log....
         /// </summary>
         public static string EventLogForm_Title {
             get {
                 return ResourceManager.GetString("EventLogForm_Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to eg. 192.168.1.2.
+        /// </summary>
+        public static string ExampleGateway {
+            get {
+                return ResourceManager.GetString("ExampleGateway", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to eg. 192.168.1.123.
+        /// </summary>
+        public static string ExampleIP {
+            get {
+                return ResourceManager.GetString("ExampleIP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to eg. 255.255.255.0.
+        /// </summary>
+        public static string ExampleMask {
+            get {
+                return ResourceManager.GetString("ExampleMask", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Filter data here....
+        /// </summary>
+        public static string FilterData {
+            get {
+                return ResourceManager.GetString("FilterData", resourceCulture);
             }
         }
         
@@ -1663,6 +1798,15 @@ namespace WinHue3.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Entertainment.
+        /// </summary>
+        public static string GroupCreatorForm_Type_Entertainment {
+            get {
+                return ResourceManager.GetString("GroupCreatorForm_Type_Entertainment", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Light Group.
         /// </summary>
         public static string GroupCreatorForm_Type_LightGroup {
@@ -1681,11 +1825,29 @@ namespace WinHue3.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Group name (Optional).
+        /// </summary>
+        public static string GroupName_Watermark {
+            get {
+                return ResourceManager.GetString("GroupName_Watermark", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Groups.
         /// </summary>
         public static string Groups {
             get {
                 return ResourceManager.GetString("Groups", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Group Scene.
+        /// </summary>
+        public static string GroupScene {
+            get {
+                return ResourceManager.GetString("GroupScene", resourceCulture);
             }
         }
         
@@ -1744,11 +1906,47 @@ namespace WinHue3.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Light Scene.
+        /// </summary>
+        public static string LightScene {
+            get {
+                return ResourceManager.GetString("LightScene", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Others.
         /// </summary>
         public static string ListView_others {
             get {
                 return ResourceManager.GetString("ListView_others", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Location.
+        /// </summary>
+        public static string Locations {
+            get {
+                return ResourceManager.GetString("Locations", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Log Folder.
+        /// </summary>
+        public static string LogFolder {
+            get {
+                return ResourceManager.GetString("LogFolder", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to You can get your latest log here :.
+        /// </summary>
+        public static string LogLocation {
+            get {
+                return ResourceManager.GetString("LogLocation", resourceCulture);
             }
         }
         
@@ -2842,6 +3040,15 @@ namespace WinHue3.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to my manufacturer name.
+        /// </summary>
+        public static string MfgName {
+            get {
+                return ResourceManager.GetString("MfgName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Custom.
         /// </summary>
         public static string Mode_Custom {
@@ -2923,6 +3130,60 @@ namespace WinHue3.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to MQTT client.
+        /// </summary>
+        public static string MqttClient {
+            get {
+                return ResourceManager.GetString("MqttClient", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to my new sensor.
+        /// </summary>
+        public static string NewSensor {
+            get {
+                return ResourceManager.GetString("NewSensor", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to (object type).
+        /// </summary>
+        public static string Object_Type_Watermark {
+            get {
+                return ResourceManager.GetString("Object_Type_Watermark", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to (object).
+        /// </summary>
+        public static string Object_Watermark {
+            get {
+                return ResourceManager.GetString("Object_Watermark", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Optional.
+        /// </summary>
+        public static string Optional {
+            get {
+                return ResourceManager.GetString("Optional", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Paste.
+        /// </summary>
+        public static string Paste {
+            get {
+                return ResourceManager.GetString("Paste", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to *Power settings may take some time to apply..
         /// </summary>
         public static string PowerSettings_Warning {
@@ -2932,11 +3193,38 @@ namespace WinHue3.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to You must press the link button on the bridge before adding a user..
+        /// </summary>
+        public static string PressLinkButton {
+            get {
+                return ResourceManager.GetString("PressLinkButton", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Properties of the selected object.
         /// </summary>
         public static string PropertyGridForm_Title {
             get {
                 return ResourceManager.GetString("PropertyGridForm_Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Refresh Time.
+        /// </summary>
+        public static string RefreshTime {
+            get {
+                return ResourceManager.GetString("RefreshTime", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Interval between refreshes of objects..
+        /// </summary>
+        public static string RefreshTimeTooltip {
+            get {
+                return ResourceManager.GetString("RefreshTimeTooltip", resourceCulture);
             }
         }
         
@@ -3490,7 +3778,7 @@ namespace WinHue3.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to STEP 2 : Pick a color.
+        ///   Looks up a localized string similar to STEP 3 : Pick a color.
         /// </summary>
         public static string SceneCreatorForm_Step2 {
             get {
@@ -3499,7 +3787,7 @@ namespace WinHue3.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to STEP 3 : Chose one or more lights.
+        ///   Looks up a localized string similar to STEP 2 : Choose one or more lights.
         /// </summary>
         public static string SceneCreatorForm_Step3 {
             get {
@@ -4264,7 +4552,7 @@ namespace WinHue3.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Upnp Timeout :.
+        ///   Looks up a localized string similar to Upnp Timeout.
         /// </summary>
         public static string SettingsForm_Tab_MainSettings_Network_UpnpTimeout {
             get {
@@ -4444,11 +4732,101 @@ namespace WinHue3.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Show Floor Plan Tab.
+        /// </summary>
+        public static string ShowFloorPlanTab {
+            get {
+                return ResourceManager.GetString("ShowFloorPlanTab", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Can changed when off / Apply at toggle On.
+        /// </summary>
+        public static string Sliders_CanChange {
+            get {
+                return ResourceManager.GetString("Sliders_CanChange", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Disabled when object is off / Only Toggle On.
+        /// </summary>
+        public static string Sliders_DisabledWhenOff {
+            get {
+                return ResourceManager.GetString("Sliders_DisabledWhenOff", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Ascending.
+        /// </summary>
+        public static string Sort_Ascending {
+            get {
+                return ResourceManager.GetString("Sort_Ascending", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Default.
+        /// </summary>
+        public static string Sort_Default {
+            get {
+                return ResourceManager.GetString("Sort_Default", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Descending.
+        /// </summary>
+        public static string Sort_Descending {
+            get {
+                return ResourceManager.GetString("Sort_Descending", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Enable Sreaming.
+        /// </summary>
+        public static string Stream {
+            get {
+                return ResourceManager.GetString("Stream", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Optional.
         /// </summary>
         public static string Tooltip_Optional {
             get {
                 return ResourceManager.GetString("Tooltip_Optional", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Transition Time (Max : 01h49m13s.5ms).
+        /// </summary>
+        public static string Transitiontime {
+            get {
+                return ResourceManager.GetString("Transitiontime", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to (default).
+        /// </summary>
+        public static string TransitionTimeDefault {
+            get {
+                return ResourceManager.GetString("TransitionTimeDefault", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Max : 01h49m13s.5ms.
+        /// </summary>
+        public static string TransitionTimeToolTip {
+            get {
+                return ResourceManager.GetString("TransitionTimeToolTip", resourceCulture);
             }
         }
         

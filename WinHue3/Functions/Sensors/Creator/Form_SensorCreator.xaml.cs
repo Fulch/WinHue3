@@ -12,14 +12,13 @@ namespace WinHue3.Functions.Sensors.Creator
     public partial class Form_SensorCreator : Window
     {
         private SensorCreatorViewModel _scvm;
-        private readonly Bridge _bridge;
         private string _sensorId;
         private bool _editing;
-
-        public Form_SensorCreator(Bridge bridge, Sensor obj = null)
+        private Bridge _bridge; 
+        public Form_SensorCreator(Bridge bridge,Sensor obj = null)
         {
-            _bridge = bridge;
             InitializeComponent();
+            _bridge = bridge;
             _scvm = DataContext as SensorCreatorViewModel;
             if (obj != null)
             {

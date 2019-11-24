@@ -3,27 +3,28 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Windows.Input;
 using Newtonsoft.Json;
+using WinHue3.Philips_Hue;
+using WinHue3.Philips_Hue.BridgeObject;
 using WinHue3.Utils;
-using Bridge = WinHue3.Philips_Hue.BridgeObject.Bridge;
 using MessageBox = System.Windows.Forms.MessageBox;
-using WebRequestType = WinHue3.Philips_Hue.Communication.WebRequestType;
+
 
 namespace WinHue3.Functions.Advanced_Creator
 {
     public class AdvancedCreatorViewModel : ValidatableBindableBase
     {
         private string _text;
-        private Bridge _bridge;
         private string _type;
         private WebRequestType _requestType;
         private string _url;
+        private Bridge _bridge;
 
         public AdvancedCreatorViewModel()
         {
             _text = string.Empty;
             _type = string.Empty;
-            _requestType = WebRequestType.Post;
             _url = string.Empty;
+            _requestType = WebRequestType.Post;
         }
 
         public void Initialize(Bridge bridge)
@@ -41,7 +42,7 @@ namespace WinHue3.Functions.Advanced_Creator
     ""description"" : ""{YOUR DESCRIPTION}"",
     ""localtime"" : ""{YYYY-MM-DDTHH:mm:ss}"",
     ""command"" : {
-        ""address"": ""/api/" + _bridge.ApiKey + @"/groups/1/action"",
+        ""address"": ""/api/" + _bridge + @"/groups/1/action"",
         ""method"": ""PUT"",
         ""body"": {
             ""on"" : true

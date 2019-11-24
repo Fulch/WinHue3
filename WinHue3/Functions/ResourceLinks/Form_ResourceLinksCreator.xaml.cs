@@ -27,23 +27,21 @@ namespace WinHue3.Functions.ResourceLinks
     public partial class Form_ResourceLinksCreator : Window
     {
         private ResourceLinkCreatorViewModel rlcvm;
-        private Bridge _bridge;
         private string id;
-
+        private Bridge _bridge;
         public Form_ResourceLinksCreator()
         {        
             InitializeComponent();
             rlcvm = this.DataContext as ResourceLinkCreatorViewModel;
         }
 
-        public async Task Initialize(Bridge bridge, Resourcelink rl = null)
+        public async Task Initialize(Bridge bridge,Resourcelink rl = null)
         {
             _bridge = bridge;
-           
             rlcvm.LinkCreatorModel.ShowID = WinHueSettings.settings.ShowID;
             rlcvm.LinkCreatorModel.Wrap = WinHueSettings.settings.WrapText;
 
-            List<IHueObject> hr = await HueObjectHelper.GetBridgeDataStoreAsyncTask(_bridge);
+            List<IHueObject> hr = await _bridge.GetAllObjectsAsync();
             if (hr == null) return;
             ObservableCollection<IHueObject> listbrobj = new ObservableCollection<IHueObject>();
             List<IHueObject> listobj = hr;

@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
@@ -13,16 +14,17 @@ namespace WinHue3.Functions.HotKeys.Creator
     public partial class Form_HotKeyCreator : Window
     {
         private HotKeyCreatorViewModel _hkv;
-
+        private Bridge _bridge;
         public Form_HotKeyCreator()
         {
             InitializeComponent();
             _hkv = DataContext as HotKeyCreatorViewModel;           
         }
 
-        public async Task Initialize(Bridge bridge)
+        public async Task Initialize(Bridge bridge, ObservableCollection<HotKey> listhotkeys)
         {
-            await _hkv.Initialize(bridge);
+            _bridge = bridge;
+            await _hkv.Initialize(_bridge,listhotkeys);
         }
 
         private void btnDone_Click(object sender, RoutedEventArgs e)
@@ -35,11 +37,6 @@ namespace WinHue3.Functions.HotKeys.Creator
         {
             if(_hkv.CanRecordKeyUp)
                 _hkv.CaptureHotkey(e);
-        }
-
-        public List<HotKey> GetHotKeys()
-        {
-            return _hkv.ListHotKeys.ToList();
         }
 
         private void btnHelpGeneric_Click(object sender, RoutedEventArgs e)

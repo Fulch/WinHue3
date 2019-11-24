@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Windows.Input;
 using WinHue3.ExtensionMethods;
+using WinHue3.Functions.Application_Settings.Settings;
 using WinHue3.Functions.Rules.Validation;
 using WinHue3.Philips_Hue.Communication;
 using WinHue3.Philips_Hue.HueObjects.Common;
@@ -18,17 +19,16 @@ using WinHue3.Philips_Hue.HueObjects.ScheduleObject;
 using WinHue3.Philips_Hue.HueObjects.ResourceLinkObject;
 using WinHue3.Utils;
 using Action = WinHue3.Philips_Hue.HueObjects.GroupObject.Action;
-using Bridge = WinHue3.Philips_Hue.BridgeObject.Bridge;
-
+using WinHue3.Philips_Hue.BridgeObject;
 
 namespace WinHue3.Functions.Rules.Creator
 {
     public class RuleCreatorViewModel: ValidatableBindableBase
     {
-        private Bridge _bridge;
         private string _name;
         private bool _enabled;
         private Philips_Hue.BridgeObject.BridgeObjects.BridgeSettings _bs;
+        private Bridge _bridge;
         public RuleCreatorViewModel()
         {
             _name = string.Empty;
@@ -44,8 +44,8 @@ namespace WinHue3.Functions.Rules.Creator
         public async Task Initialize(Bridge bridge)
         {
             _bridge = bridge;
-            List<IHueObject> objects = await HueObjectHelper.GetBridgeDataStoreAsyncTask(bridge);
-            _bs = await bridge.GetBridgeSettingsAsyncTask();          
+            List<IHueObject> objects = await _bridge.GetAllObjectsAsync(WinHueSettings.settings.ShowHiddenScenes,true);
+            _bs = await _bridge.GetBridgeSettingsAsyncTask();          
             _listAvailableHueObject.AddRange(objects);
 
         }
@@ -253,10 +253,13 @@ namespace WinHue3.Functions.Rules.Creator
         {
             if (SelectedRuleAction == null) return;
             HueAddress ha = SelectedRuleAction.address;
+            CurrentPath = SelectedRuleAction.address;
             switch (ha.objecttype)
             {
                 case "lights":
                     SelectedHueObjectType = typeof(Light);
+                    SelectHueObjectType();
+                    CurrentPath = SelectedRuleAction.address;
                     if (_listHueObjects.Exists(x => x.Id == ha.id))
                     {
                         SelectedHueObject = _listHueObjects.Find(x => x.Id == ha.id);
@@ -272,6 +275,7 @@ namespace WinHue3.Functions.Rules.Creator
                     if (SelectedRuleAction.body.Contains("scene")) goto case "scenes";
 
                     SelectedHueObjectType = typeof(Group);
+                    SelectHueObjectType();
                     if (_listHueObjects.Exists(x => x.Id == ha.id))
                     {
                         SelectedHueObject = _listHueObjects.Find(x => x.Id == ha.id);
@@ -285,6 +289,7 @@ namespace WinHue3.Functions.Rules.Creator
                     break;
                 case "sensors":
                     SelectedHueObjectType = typeof(Sensor);
+                    SelectHueObjectType();
                     if (_listHueObjects.Exists(x => x.Id == ha.id))
                     {
                         SelectedHueObject = _listHueObjects.Find(x => x.Id == ha.id);
@@ -302,6 +307,7 @@ namespace WinHue3.Functions.Rules.Creator
                     break;
                 case "scenes":
                     SelectedHueObjectType = typeof(Scene);
+                    SelectHueObjectType();
                     SceneBody sb = Serializer.DeserializeToObject<SceneBody>(SelectedRuleAction.body);
                     if (_listHueObjects.Exists(x => x.Id == sb.scene))
                     {
@@ -315,7 +321,8 @@ namespace WinHue3.Functions.Rules.Creator
                     break;
                 case "schedules":
                     SelectedHueObjectType = typeof(Schedule);
-                    if(_listHueObjects.Exists(x => x.Id == ha.id))
+                    SelectHueObjectType();
+                    if (_listHueObjects.Exists(x => x.Id == ha.id))
                     {
                         Schedule sc = Serializer.DeserializeToObject<Schedule>(SelectedRuleAction.body);
                         SelectedHueObject = _listHueObjects.Find(x => x.Id == ha.id);
@@ -347,7 +354,7 @@ namespace WinHue3.Functions.Rules.Creator
         private bool CanAddAction()
         {
             if (ListRuleActions.Count > 7) return false;
-            if (Serializer.SerializeToJson(ActionProperties) == "{}") return false;
+            if (Serializer.SerializeJsonObject(ActionProperties) == "{}") return false;
             return true;
         }
 
@@ -358,18 +365,18 @@ namespace WinHue3.Functions.Rules.Creator
             RuleAction ra = new RuleAction();
             HueAddress address = new HueAddress(CurrentPath);
 
-     /*       if (ListRuleActions.Any(x => x.address == address))
+            if (ListRuleActions.Any(x => x.address == address))
             {
                 result = MessageBox.Show(GlobalStrings.Rule_ActionAlreadyExists, GlobalStrings.Warning,
                     MessageBoxButtons.YesNo, MessageBoxIcon.Question);
                 if (result == DialogResult.Yes)
                     ListRuleActions.Remove(ListRuleActions.FirstOrDefault(x => x.address == address));
-            }*/
+            }
 
             if (result != DialogResult.Yes) return;
             ra.address = address;
             ra.method = "PUT";
-            ra.body = Serializer.SerializeToJson(_actionProperties);
+            ra.body = Serializer.SerializeJsonObject(_actionProperties);
             ListRuleActions.Add(ra);
             ActionProperties = null;
             SelectedHueObjectType = null;
@@ -416,12 +423,12 @@ namespace WinHue3.Functions.Rules.Creator
 
         public Type SelectedHueObjectType
         {
-            get { return _selectedHueObjectType; }
-            set { SetProperty(ref _selectedHueObjectType, value); }
+            get => _selectedHueObjectType;
+            set => SetProperty(ref _selectedHueObjectType, value);
         }
-        #endregion
+#endregion
 
-        #region RuleCondition
+#region RuleCondition
         private List<HuePropertyTreeViewItem> _listConditionProperties;
         private string _conditionValue;
         private HuePropertyTreeViewItem _selectedConditionProperty;
@@ -436,6 +443,18 @@ namespace WinHue3.Functions.Rules.Creator
         public ICommand Condition_RemoveRuleConditionCommand => new RelayCommand(param => RemoveRuleCondition(), (param) => CanRemoveRuleCondition());
         public ICommand Condition_SelectRuleConditionCommand => new RelayCommand(param => SelectRuleCondition());
         public ICommand Condition_ClearSelectedRuleConditionCommand => new RelayCommand(param => ClearSelectedRuleCondition(), (param) => CanClearRuleCondition());
+        public ICommand BtnEventCommand => new RelayCommand(InsertButtonValue, param => CanInsertButtonValue());
+
+        private bool CanInsertButtonValue()
+        {
+            // TODO : check type
+            return true;
+        }
+
+        private void InsertButtonValue(object param)
+        {
+            ConditionValue = param.ToString();
+        }
 
         private bool CanClearRuleCondition()
         {
@@ -454,7 +473,7 @@ namespace WinHue3.Functions.Rules.Creator
         {
             ListConditionProperties = null;
             if (SelectedConditionHueObject == null) return;
-            ListConditionProperties = TreeViewHelper.BuildPropertiesTree(SelectedConditionHueObject,$"/{SelectedConditionHueObject.GetHueType()}/{SelectedConditionHueObject.Id}", "object").ToList();
+            ListConditionProperties = TreeViewHelper.BuildPropertiesTree(SelectedConditionHueObject,$"/{SelectedConditionHueObject.GetType().Name.ToLower()+"s"}/{SelectedConditionHueObject.Id}", "object").ToList();
 
         }
 
@@ -513,16 +532,16 @@ namespace WinHue3.Functions.Rules.Creator
         private void SelectRuleCondition()
         {
             if (_selectedRuleCondition == null) return;
+
+            SelectedRuleConditionType = _selectedRuleCondition.address.objecttype == "config" ? typeof(Philips_Hue.BridgeObject.BridgeObjects.BridgeSettings) : HueObjectCreator.CreateHueObject(_selectedRuleCondition.address.objecttype).GetType();
+            SelectConditionObjectType();
+
             if (_selectedRuleCondition.address.objecttype != "config")
             {
-                SelectedRuleConditionType = HueObjectCreator.CreateHueObject(_selectedRuleCondition.address.objecttype).GetType();
                 SelectedConditionHueObject = ListConditionHueObjects.FirstOrDefault(x => x.Id == _selectedRuleCondition.address.id);
+                SelectConditionHueObject();
+            }
 
-            }
-            else
-            {
-                SelectedRuleConditionType = typeof(Philips_Hue.BridgeObject.BridgeObjects.BridgeSettings);
-            }
             if (SelectedConditionHueObject != null || SelectedRuleConditionType == typeof(Philips_Hue.BridgeObject.BridgeObjects.BridgeSettings))
             {
                 ConditionOperator = _selectedRuleCondition.@operator;
@@ -572,6 +591,8 @@ namespace WinHue3.Functions.Rules.Creator
                 nrt.IsSelected = true;
                 return nrt;
             }
+
+
 
             return null;
         }
@@ -657,23 +678,23 @@ namespace WinHue3.Functions.Rules.Creator
 
         public Type SelectedRuleConditionType
         {
-            get { return _selectedRuleConditionType; }
-            set { SetProperty(ref _selectedRuleConditionType,value); }
+            get => _selectedRuleConditionType;
+            set => SetProperty(ref _selectedRuleConditionType,value);
         }
 
         public List<IHueObject> ListConditionHueObjects
         {
-            get { return _listConditionHueObjects; }
-            set { SetProperty(ref _listConditionHueObjects,value); }
+            get => _listConditionHueObjects;
+            set => SetProperty(ref _listConditionHueObjects,value);
         }
 
         public IHueObject SelectedConditionHueObject
         {
-            get { return _selectedConditionHueObject; }
-            set { SetProperty(ref _selectedConditionHueObject,value); }
+            get => _selectedConditionHueObject;
+            set => SetProperty(ref _selectedConditionHueObject,value);
         }
 
-        #endregion
+#endregion
     }
 }
 

@@ -1,10 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net.Sockets;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Threading;
 using Org.BouncyCastle.Crypto.Tls;
 
 namespace WinHue3.Philips_Hue.BridgeObject.Entertainment_API
@@ -31,13 +26,13 @@ namespace WinHue3.Philips_Hue.BridgeObject.Entertainment_API
 
         public int Receive(byte[] buf, int off, int len, int waitMillis)
         {
-
+            Console.Write(buf);
             return socket.Receive(buf, off, len, SocketFlags.None);
         }
 
         public void Send(byte[] buf, int off, int len)
         {
-
+            Console.Write(buf);
             socket.Send(buf, off, len, SocketFlags.None);
                 
         }

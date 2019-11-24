@@ -3,14 +3,17 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Net;
+using System.Net.Http;
 using System.Net.Sockets;
 using System.ServiceProcess;
 using System.Xml;
 using System.Xml.Serialization;
 using ManagedUPnP;
+using WinHue3.Functions.Application_Settings.Settings;
 using WinHue3.Philips_Hue.BridgeObject;
 using WinHue3.Philips_Hue.BridgeObject.BridgeObjects;
 using WinHue3.Philips_Hue.Communication;
+using WinHue3.Philips_Hue.Communication2;
 
 namespace WinHue3.Philips_Hue
 {
@@ -21,8 +24,8 @@ namespace WinHue3.Philips_Hue
     public static class Hue
     {
 
-        private static BackgroundWorker _ipscanBgw = new BackgroundWorker();
-        private static BackgroundWorker _detectionBgw = new BackgroundWorker();
+        private static readonly BackgroundWorker _ipscanBgw = new BackgroundWorker();
+        private static readonly BackgroundWorker _detectionBgw = new BackgroundWorker();
         private static readonly log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
         static Hue()
@@ -96,11 +99,9 @@ namespace WinHue3.Philips_Hue
             {
 
                 // Detect using Portal
-                CommResult comres = Comm.SendRequest(new Uri("https://discovery.meethue.com"), WebRequestType.Get);
-
-                switch (comres.Status)
+                HttpResult comres = HueHttpClient.SendRequest(new Uri("https://discovery.meethue.com"), WebRequestType.Get);
+                if (comres.Success)
                 {
-                    case WebExceptionStatus.Success:
                         List<HueDevice> portalDevices = Serializer.DeserializeToObject<List<HueDevice>>(comres.Data);
                         foreach (HueDevice dev in portalDevices)
                         {
@@ -114,19 +115,13 @@ namespace WinHue3.Philips_Hue
                             }
                             
                         }
-                        break;
-                    case WebExceptionStatus.Timeout:
-                        log.Info($"Timeout while detecting bridge via portal");
-                        OnPortalDetectionTimedOut?.Invoke(null, new DetectionErrorEventArgs(comres.Data));
-                        OnBridgeDetectionFailed?.Invoke(null, new DetectionErrorEventArgs(comres.Data));
-                        break;
-                    default:
-                        log.Info($"Unknown error while detecting bridge via portal");
-                        OnPortalDetectionError?.Invoke(null, new DetectionErrorEventArgs(comres.Data));
-                        OnBridgeDetectionFailed?.Invoke(null, new DetectionErrorEventArgs(comres.Data));
-                        break;
                 }
-
+                else
+                {
+                    log.Info($"Dns resolution failure. (AKA unable to connect to the bridge");
+                    OnPortalDetectionTimedOut?.Invoke(null, new DetectionErrorEventArgs(comres.Data));
+                    OnBridgeDetectionFailed?.Invoke(null, new DetectionErrorEventArgs(comres.Data));
+                }
             }
             log.Info("Ending bridge portal detection...");
 
@@ -210,6 +205,10 @@ namespace WinHue3.Philips_Hue
 
             BridgeSettings desc = new BridgeSettings();
             
+            HttpClient client = new HttpClient();
+            client.Timeout = TimeSpan.FromMilliseconds(50);
+            
+
             for (byte x = 2; x <= 254; x++)
             {
                 if (_ipscanBgw.CancellationPending)
@@ -222,16 +221,15 @@ namespace WinHue3.Philips_Hue
                 if (x == currentip) continue;
                 ipArray[3] = x;
 
-                Comm.Timeout = 50;
+                
                 if (_ipscanBgw.CancellationPending) break;
-
-                CommResult comres = Comm.SendRequest(new Uri($@"http://{new IPAddress(ipArray)}/api/config"), WebRequestType.Get);
-
-                switch (comres.Status)
+                try
                 {
-                    case WebExceptionStatus.Success:
-                        desc = Serializer.DeserializeToObject<BridgeSettings>(comres.Data); // try to deserialize the received message.
-                        if(desc == null) continue; // if the deserialisation didn't work it means this is not a bridge continue with next ip.
+                    HttpResponseMessage httpr = client.GetAsync(new Uri($@"http://{new IPAddress(ipArray)}/api/config")).Result;
+                    if (httpr.IsSuccessStatusCode)
+                    {
+                        desc = Serializer.DeserializeToObject<BridgeSettings>(httpr.Content.ReadAsStringAsync().Result); // try to deserialize the received message.
+                        if (desc == null) continue; // if the deserialisation didn't work it means this is not a bridge continue with next ip.
                         Bridge bridge = new Bridge()
                         {
                             IpAddress = new IPAddress(ipArray),
@@ -245,7 +243,7 @@ namespace WinHue3.Philips_Hue
                             {
 
                                 log.Info($"Bridge found : {bridge.Name} at {bridge.IpAddress} ");
-                                newlist.Add(desc.mac,bridge);
+                                newlist.Add(desc.mac, bridge);
                             }
                             else
                             {
@@ -255,18 +253,23 @@ namespace WinHue3.Philips_Hue
                         else
                         {
                             log.Info($"Bridge found : {bridge.Name} at {bridge.IpAddress} ");
-                            newlist.Add(desc.mac,bridge);
+                            newlist.Add(desc.mac, bridge);
                         }
-                        break;
-                    case WebExceptionStatus.Timeout:
-                        break;
-                    default:
-                        
-                        break;
+                    }
                 }
+                catch(System.TimeoutException)
+                {
+                    // Address is not responding ignore.
+                }
+                catch(Exception)
+                {
+                    
+                }
+          
                 
             }
 
+            client.Dispose();
             e.Result = newlist;
             log.Info("Ending IP scan for bridge.");
         }
@@ -330,8 +333,8 @@ namespace WinHue3.Philips_Hue
         public static event PortalDetectionTimedOutEvent OnPortalDetectionTimedOut;
         public delegate void PortalDetectionTimedOutEvent(object sender, DetectionErrorEventArgs e);
 
-        public static event PortalDetectionErrorEvent OnPortalDetectionError;
-        public delegate void PortalDetectionErrorEvent(object sender, DetectionErrorEventArgs e);
+       // public static event PortalDetectionErrorEvent OnPortalDetectionError;
+      //  public delegate void PortalDetectionErrorEvent(object sender, DetectionErrorEventArgs e);
 
         public static event IpScanDetectionCompleted OnIpScanComplete;
         public delegate void IpScanDetectionCompleted(object sender, RunWorkerCompletedEventArgs e);

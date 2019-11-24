@@ -39,6 +39,7 @@ namespace WinHue3.Functions.Groups.Creator
                     }
                 }
                 GroupCreator.Listlights = list;
+                GroupCreator.Class = gr.@class;
             }
             get
             {
@@ -69,7 +70,6 @@ namespace WinHue3.Functions.Groups.Creator
         }
 
         public ICommand ClearFieldsCommand => new RelayCommand(param => ClearFields());
-
 
     }
 }

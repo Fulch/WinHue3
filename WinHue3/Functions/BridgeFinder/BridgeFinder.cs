@@ -1,13 +1,12 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel;
-using System.Linq;
 using System.Net;
 using System.Net.Sockets;
-using System.Text;
-using System.Threading.Tasks;
+using WinHue3.Functions.Application_Settings.Settings;
+using WinHue3.Philips_Hue;
 using WinHue3.Philips_Hue.BridgeObject;
 using WinHue3.Philips_Hue.Communication;
+using WinHue3.Philips_Hue.Communication2;
 
 namespace WinHue3.Functions.BridgeFinder
 {
@@ -92,30 +91,22 @@ namespace WinHue3.Functions.BridgeFinder
                 ipArray[3] = x;
                 _bgw.ReportProgress(0, new ProgressReport(new IPAddress(ipArray),x));
 
-                Comm.Timeout = 50;
+                HueHttpClient.Timeout = 50;
                 if (_bgw.CancellationPending) break;
 
-                CommResult comres = Comm.SendRequest(new Uri($@"http://{new IPAddress(ipArray)}/api/config"), WebRequestType.Get);
+                HttpResult comres = HueHttpClient.SendRequest(new Uri($@"http://{new IPAddress(ipArray)}/api/config"), WebRequestType.Get);
                 Philips_Hue.BridgeObject.BridgeObjects.BridgeSettings desc = new Philips_Hue.BridgeObject.BridgeObjects.BridgeSettings();
 
-                switch (comres.Status)
+                if (comres.Success)
                 {
-                    case WebExceptionStatus.Success:
-                        desc = Serializer.DeserializeToObject<Philips_Hue.BridgeObject.BridgeObjects.BridgeSettings>(comres.Data); // try to deserialize the received message.
-                        if (desc == null) continue; // if the deserialisation didn't work it means this is not a bridge continue with next ip.
-                        if (desc.mac == mac)
-                        {
-                            e.Result = new IPAddress(ipArray);
-                            break;
-                        }
+                    desc = Serializer.DeserializeToObject<Philips_Hue.BridgeObject.BridgeObjects.BridgeSettings>(comres.Data); // try to deserialize the received message.
+                    if (desc == null) continue; // if the deserialisation didn't work it means this is not a bridge continue with next ip.
+                    if (desc.mac == mac)
+                    {
+                        e.Result = new IPAddress(ipArray);
+                        break;
+                    }
 
-                        break;
-                    case WebExceptionStatus.Timeout:
-                        // IP DOES NOT RESPOND
-                        break;
-                    default:
-
-                        break;
                 }
 
                 if (e.Result != null)
@@ -125,6 +116,9 @@ namespace WinHue3.Functions.BridgeFinder
                 }
                     
             }
+
+            // Restore the timeout to the original value
+            HueHttpClient.Timeout = WinHueSettings.settings.Timeout;
         }
 
     }

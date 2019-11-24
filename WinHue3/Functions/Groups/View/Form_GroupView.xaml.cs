@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using WinHue3.Philips_Hue.BridgeObject;
@@ -23,12 +24,13 @@ namespace WinHue3.Functions.Groups.View
         public async Task Initialize(Bridge bridge)
         {
             _bridge = bridge;
-            List<Light> comlgt = await HueObjectHelper.GetBridgeLightsAsyncTask(_bridge);
+            List<Light> comlgt = await _bridge.GetListObjectsAsync<Light>();
+
             _gvv = DataContext as GroupViewViewModel;
 
             if (comlgt != null)
             {
-                List<Group> comgrp = await HueObjectHelper.GetBridgeGroupsAsyncTask(_bridge);
+                List<Group> comgrp = await _bridge.GetListObjectsAsync<Group>();
                 if (comgrp != null)
                 {
 
@@ -36,7 +38,7 @@ namespace WinHue3.Functions.Groups.View
                 }
                 else
                 {
-                    MessageBoxError.ShowLastErrorMessages(bridge);
+                    MessageBoxError.ShowLastErrorMessages(_bridge);
                 }
 
                 DataContext = _gvv;
@@ -44,7 +46,7 @@ namespace WinHue3.Functions.Groups.View
             }
             else
             {
-                MessageBoxError.ShowLastErrorMessages(bridge);
+                MessageBoxError.ShowLastErrorMessages(_bridge);
             }
         }
 

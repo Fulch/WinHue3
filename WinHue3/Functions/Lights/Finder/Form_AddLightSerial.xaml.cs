@@ -11,7 +11,6 @@ namespace WinHue3.Functions.Lights.Finder
     {
         private AddLightSerialViewModel _asf;
         private Bridge _bridge;
-
         public Form_AddLightSerial(Bridge bridge)
         {
             InitializeComponent();

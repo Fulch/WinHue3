@@ -1,18 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Windows.Input;
 using System.Windows.Threading;
-using WinHue3.ExtensionMethods;
 using WinHue3.Functions.Application_Settings.Settings;
-using WinHue3.Philips_Hue;
 using WinHue3.Philips_Hue.BridgeObject;
 using WinHue3.Philips_Hue.BridgeObject.BridgeObjects;
 using WinHue3.Philips_Hue.HueObjects.Common;
-using WinHue3.Philips_Hue.HueObjects.LightObject;
 using WinHue3.Utils;
 
 namespace WinHue3.Functions.BridgeSettings
@@ -25,14 +21,15 @@ namespace WinHue3.Functions.BridgeSettings
         private BridgeSettingsSoftwareModel _softwareModel;
         private BridgeSettingsHiddenObjects _hiddenObjects;
 
-        private Bridge _bridge;
         private Capabilities _caps;
         private bool _canAutoInstall;
         private bool _canClose;
-        private DispatcherTimer _updateTimer;
-        private DispatcherTimer _updateProgressTimer;
+        private readonly DispatcherTimer _updateTimer;
+        private readonly DispatcherTimer _updateProgressTimer;
 
         private int _updateProgress;
+
+        private Bridge _bridge;
 
         public BridgeSettingsViewModel()
         {
@@ -50,17 +47,17 @@ namespace WinHue3.Functions.BridgeSettings
             UpdateProgress = 0;
             CanClose = true;
         }
-
-        private async Task Initialize()
+        /*
+        private async Task Initialize(Bridge bridge)
         {
-            List<IHueObject> lo = await HueObjectHelper.GetBridgeDataStoreAsyncTask(_bridge, false);
-            List<IHueObject> ls = new List<IHueObject>();
+            _bridge = bridge;
+            List<IHueObject> lo = await _bridge.GetAllObjectsAsync(true);
             HiddenObjects.ListObjects = new ObservableCollection<IHueObject>(lo);
             foreach (Tuple<string,string> t in WinHueSettings.bridges.BridgeInfo[_bridge.Mac].hiddenobjects)
             {
-                if (HiddenObjects.ListObjects.Any(x => x.Id == t.Item1 && x.GetHueType() == t.Item2))
+                if (HiddenObjects.ListObjects.Any(x => x.Id == t.Item1 && x.GetType().Name == t.Item2))
                 {
-                    IHueObject obj = HiddenObjects.ListObjects.FirstOrDefault(x => x.Id == t.Item1 && x.GetHueType() == t.Item2);
+                    IHueObject obj = HiddenObjects.ListObjects.FirstOrDefault(x => x.Id == t.Item1 && x.GetType().Name == t.Item2);
                     HiddenObjects.ListObjects.Remove(obj);
                     HiddenObjects.HiddenObjects.Add(obj);
                 }   
@@ -68,7 +65,7 @@ namespace WinHue3.Functions.BridgeSettings
 
             HiddenObjects.AcceptChanges();
         }
-
+        */
         public ICommand SaveHiddenObjectsCommand => new RelayCommand(param => SaveHiddenObjects(), (param) => CanSaveHiddenObjects());
 
         private bool CanSaveHiddenObjects()
@@ -81,9 +78,9 @@ namespace WinHue3.Functions.BridgeSettings
             WinHueSettings.bridges.BridgeInfo[_bridge.Mac].hiddenobjects.Clear();
             foreach (IHueObject l in HiddenObjects.HiddenObjects)
             {
-                if (!WinHueSettings.bridges.BridgeInfo[_bridge.Mac].hiddenobjects.Any(x => x.Item1 == l.Id && x.Item2 == l.GetHueType()))
+                if (!WinHueSettings.bridges.BridgeInfo[_bridge.Mac].hiddenobjects.Any(x => x.Item1 == l.Id && x.Item2 == l.GetType().Name))
                 {
-                    WinHueSettings.bridges.BridgeInfo[_bridge.Mac].hiddenobjects.Add(new Tuple<string, string>(l.Id, l.GetHueType()));
+                    WinHueSettings.bridges.BridgeInfo[_bridge.Mac].hiddenobjects.Add(new Tuple<string, string>(l.Id, l.GetType().Name));
                 }
                 
             }
@@ -132,7 +129,7 @@ namespace WinHue3.Functions.BridgeSettings
         public ICommand ForceCheckUpdateCommand => new AsyncRelayCommand(param => ForceCheckUpdate(), param => CanCheckForUpdate());
         public ICommand ApplyUpdateSettingsCommand => new AsyncRelayCommand(param => ApplyUpdateSettings());
         public ICommand UpdateBridgeFirmwareCommand => new AsyncRelayCommand(param => UpdateBridgeFirmware(), param => CanUpdateFirmware());
-        public ICommand InitializeCommand => new AsyncRelayCommand(param => Initialize());
+        public ICommand InitializeCommand => new AsyncRelayCommand(param => Initialize(_bridge));
 
         private bool CanCheckForUpdate()
         {

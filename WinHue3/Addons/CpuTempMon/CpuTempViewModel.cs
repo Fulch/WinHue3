@@ -19,7 +19,6 @@ namespace WinHue3.Addons.CpuTempMon
         private int _UpperTemp;
         private int _lowerGradientColor;
         private int _upperGradientColor;
-        private Bridge _bridge;
         private CpuTemp _temp;
         public bool _canTest;
         public string _cpuTemp;
@@ -29,7 +28,7 @@ namespace WinHue3.Addons.CpuTempMon
         public byte _sat;
         public List<IHueObject> _listLightGroups;
         public ObservableCollection<ISensor> _listCpuSensors;
-
+        private Bridge _bridge;
         public CpuTempViewModel()
         {
             _lowerTemp = 30;
@@ -52,7 +51,7 @@ namespace WinHue3.Addons.CpuTempMon
             _temp.OnSensorUpdated += _temp_OnSensorUpdated;
             _temp.Start();
 
-            List<IHueObject> hr = HueObjectHelper.GetBridgeDataStore(_bridge);
+            List<IHueObject> hr = _bridge.GetAllObjects();
 
             if (hr == null) return;
             ListLightGroups.AddRange(hr.Where(x => x is Light));

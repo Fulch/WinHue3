@@ -21,8 +21,8 @@ namespace WinHue3.Functions.Groups.Creator
         /// Id of the modified or created group.
         /// </summary>
         private string _id;
-
         private Bridge _bridge;
+
         private GroupCreatorViewModel gcvm;
         /// <summary>
         /// ctor
@@ -31,27 +31,54 @@ namespace WinHue3.Functions.Groups.Creator
         public Form_GroupCreator()
         {
             InitializeComponent();
-            gcvm = this.DataContext as GroupCreatorViewModel;
+            gcvm = DataContext as GroupCreatorViewModel;
         }
 
-        public async Task Initialize(Bridge bridge, Group selectedGroup = null)
+        public async Task Initialize(Bridge bridge,Group selectedGroup = null)
         {
             _bridge = bridge;
-
+            List<Light> hr = await _bridge.GetListObjectsAsync<Light>();
             if (selectedGroup == null)
-            {
-                List<Light> hr = await HueObjectHelper.GetBridgeLightsAsyncTask(bridge);
+            {            
                 if (hr != null)
                     gcvm.GroupCreator.ListAvailableLights = new ObservableCollection<Light>(hr);
             }
             else
             {
-                List<Light> hr = await HueObjectHelper.GetBridgeLightsAsyncTask(bridge);
+                if (hr != null)
+                {
+                    _id = selectedGroup.Id;
+                    gcvm.GroupCreator.ListAvailableLights = new ObservableCollection<Light>(hr);
+
+                    Group hr2 = await _bridge.GetObjectAsync<Group>(selectedGroup.Id);
+                    if (hr2 != null)
+                        gcvm.Group = hr2;
+                }
+                else
+                {
+                    MessageBoxError.ShowLastErrorMessages(_bridge);
+                }
+                BtnCreateGroup.Content = GUI.GroupCreatorForm_ModifyGroupButton;
+            }
+        }
+
+        public async Task Initialize(string group)
+        {
+            List<Light> hr = await _bridge.GetListObjectsAsync<Light>();
+            _id = group;
+            if (string.IsNullOrEmpty(group))
+            {
+                
+                if (hr != null)
+                    gcvm.GroupCreator.ListAvailableLights = new ObservableCollection<Light>(hr);
+            }
+            else
+            {
                 if (hr != null)
                 {
                     gcvm.GroupCreator.ListAvailableLights = new ObservableCollection<Light>(hr);
 
-                    Group hr2 = (Group)await HueObjectHelper.GetObjectAsyncTask(bridge, selectedGroup.Id, typeof(Group));
+                    Group hr2 = await _bridge.GetObjectAsync<Group>(group);
                     if (hr2 != null)
                         gcvm.Group = hr2;
                 }
@@ -71,38 +98,32 @@ namespace WinHue3.Functions.Groups.Creator
 
         private void btnCreateGroup_Click(object sender, RoutedEventArgs e)
         {
-            if (gcvm.Group.Id == null)
+            bool result = false;
+            if (_id == null)
             {
-                bool result = _bridge.CreateObject(gcvm.Group);
+                result = _bridge.CreateObject(gcvm.Group);
                 if (result)
                 {
-                    DialogResult = true;
                     log.Info("Group creation success");
                     _id = _bridge.LastCommandMessages.LastSuccess.value;
-                    Close();
                 }
-                else
-                {
-                    MessageBoxError.ShowLastErrorMessages(_bridge);                   
-                }
-                
             }
             else
             {
-                bool result = _bridge.ModifyObject(gcvm.Group);
+                result = _bridge.ModifyObject(gcvm.Group);
                 if (result)
                 {
-                    DialogResult = true;
-                    _id = gcvm.Group.Id;
-                    Close();
-
-                }
-                else
-                {
-                    MessageBoxError.ShowLastErrorMessages(_bridge);
+                    log.Info("Group modification success");
                 }
             }
 
+            if (!result)
+            {
+                MessageBoxError.ShowLastErrorMessages(_bridge);
+            }
+
+            DialogResult = _id != null;
+            if (DialogResult.GetValueOrDefault()) Close();
         }
 
         public string GetCreatedOrModifiedID()

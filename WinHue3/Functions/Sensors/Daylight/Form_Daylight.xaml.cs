@@ -14,14 +14,13 @@ namespace WinHue3.Functions.Sensors.Daylight
     {
         
         private string _id;
-
+        private Bridge _bridge;
         private DaylightViewModel _dvm => this.DataContext as DaylightViewModel;
-        private readonly Bridge _bridge;
 
-        public Form_Daylight(Sensor obj,Bridge bridge)
+        public Form_Daylight(Bridge bridge,Sensor obj)
         {
-            _bridge = bridge;
             InitializeComponent();
+            _bridge = bridge;
             _dvm.SetDaylight(obj); 
             _id = obj.Id;
 

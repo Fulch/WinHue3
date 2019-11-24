@@ -1,8 +1,4 @@
 ﻿using System;
-using System.IO;
-using System.Net;
-using System.Net.Sockets;
-using System.Reflection;
 using System.Windows.Input;
 using WinHue3.Functions.Application_Settings.Settings;
 using WinHue3.Functions.Lights.SupportedDevices;
@@ -12,10 +8,7 @@ using WinHue3.Philips_Hue.HueObjects.NewSensorsObject;
 using WinHue3.Philips_Hue.HueObjects.ResourceLinkObject;
 using WinHue3.Philips_Hue.HueObjects.RuleObject;
 using WinHue3.Philips_Hue.HueObjects.SceneObject;
-using WinHue3.Philips_Hue.HueObjects.ScheduleObject;
 using WinHue3.Utils;
-using Org.BouncyCastle.Crypto.Tls;
-using Org.BouncyCastle.Security;
 
 namespace WinHue3.MainForm
 {
@@ -23,7 +16,7 @@ namespace WinHue3.MainForm
     {
         private bool EnableButtons()
         {
-            return SelectedBridge != null && EnableListView.GetValueOrDefault(false);
+            return SelectedBridge != null;
         }
 
         private bool CanBridgeSettings()
@@ -33,214 +26,165 @@ namespace WinHue3.MainForm
 
         private bool IsObjectSelected()
         {
-            return SelectedHueObject != null;
+            RaisePropertyChanged("CanTT");
+            return SelectedObject != null;
         }
 
         private bool IsEditable()
         {
             if (!IsObjectSelected()) return false;
             if (IsGroupZero()) return false;
-            if (SelectedHueObject is Scene && ((Scene) SelectedHueObject).version == 1) return false;
-            return !(SelectedHueObject is Light);
-        }
-
-        private bool CanSchedule()
-        {
-            if (!IsObjectSelected() ) return false;
-            return SelectedHueObject is Light || SelectedHueObject is Group || SelectedHueObject is Scene ;
-        }
-
-        public bool? EnableListView
-        {
-            get
+            switch (SelectedObject)
             {
-                return !_selectedBridge?.RequiredUpdate;
+                case Group group when @group.@class == "TV":
+                case Scene scene when scene.version == 1:
+                    return false;
+                default:
+                    return !(SelectedObject is Light);
             }
         }
-
-        public bool SearchingLights => _findlighttimer.IsEnabled;
 
         public bool CanSearchNewLights()
         {
             if (!EnableButtons()) return false;
-            return !_findlighttimer.IsEnabled ;
+            return !SearchingLights;
         }
 
         private bool CanSearchNewSensor()
         {
             if (!EnableButtons()) return false;
-            return !_findsensortimer.IsEnabled ;
+            return !SearchingSensors;
         }
 
-        private void Expand(Type objecttype)
-        {
-            switch (objecttype)
-            {
-                case Type light when light == typeof(Light):
-                    break;
-                case Type group when group == typeof(Group):
-                    break;
-                case Type scene when scene == typeof(Scene):
-                    break;
-                case Type sensor when sensor == typeof(Sensor):
-                    break;
-                case Type schedule when schedule == typeof(Schedule):
-                    break;
-                case Type rl when rl == typeof(Resourcelink):
-                    break;
-                case Type rule when rule == typeof(Rule):
-                    break;
-                default:
-                    break;
-            }
-
-        }
-
-
-        private void Collapse(Type objecttype)
-        {
-            switch (objecttype)
-            {
-                case Type light when light == typeof(Light):
-                    break;
-                case Type group when group == typeof(Group):
-                    break;
-                case Type scene when scene == typeof(Scene):
-                    break;
-                case Type sensor when sensor == typeof(Sensor):
-                    break;
-                case Type schedule when schedule == typeof(Schedule):
-                    break;
-                case Type rl when rl == typeof(Resourcelink):
-                    break;
-                case Type rule when rule == typeof(Rule):
-                    break;
-                default:
-                    break;
-            }
-        }
-
+    
         private bool CanHue()
         {
             if (!IsObjectSelected()) return false;
-            if (SelectedHueObject is Light light)
+            switch (SelectedObject)
             {
-                if (light.state.reachable == false && light.manufacturername != "OSRAM" && WinHueSettings.settings.OSRAMFix) return false;
-                if (light.state.on == false && WinHueSettings.settings.SlidersBehavior == 0) return false;
-                return SupportedDeviceType.DeviceType.ContainsKey(light.type) && SupportedDeviceType.DeviceType[light.type].Canhue;
+                case Light light when light.state.reachable == false && light.manufacturername != "OSRAM" && WinHueSettings.settings.OSRAMFix:
+                    return false;
+                case Light light when light.state.@on == false && WinHueSettings.settings.SlidersBehavior == 0:
+                    return false;
+                case Light light:
+                    return SupportedDeviceType.DeviceType.ContainsKey(light.type) && SupportedDeviceType.DeviceType[light.type].Canhue;
+                case Group group:
+                    return @group.action?.hue != null;
+                default:
+                    return false;
             }
-            else if (SelectedHueObject is Group)
-            {
-                return ((Group)SelectedHueObject).action?.hue != null;
-            }
-            return false;
         }
 
         private bool CanBri()
         {
             if (!IsObjectSelected()) return false;
-            if (SelectedHueObject is Light light)
+            switch (SelectedObject)
             {
-                if (light.state.reachable == false && light.manufacturername != "OSRAM" && WinHueSettings.settings.OSRAMFix) return false;
-                if (light.state.on == false && WinHueSettings.settings.SlidersBehavior == 0) return false;
-                return SupportedDeviceType.DeviceType.ContainsKey(light.type) && SupportedDeviceType.DeviceType[light.type].Canbri;
+                case Light light when light.state.reachable == false && light.manufacturername != "OSRAM" && WinHueSettings.settings.OSRAMFix:
+                    return false;
+                case Light light when light.state.@on == false && WinHueSettings.settings.SlidersBehavior == 0:
+                    return false;
+                case Light light:
+                    return SupportedDeviceType.DeviceType.ContainsKey(light.type) && SupportedDeviceType.DeviceType[light.type].Canbri;
+                case Group group:
+                    return @group.action?.bri != null;
+                default:
+                    return false;
             }
-            else if (SelectedHueObject is Group)
-            {
-                return ((Group)SelectedHueObject).action?.bri != null;
-            }
-            return false;
         }
 
         private bool CanCt()
         {
             if (!IsObjectSelected()) return false;
-            if (SelectedHueObject is Light light)
+            switch (SelectedObject)
             {
-                if (light.state.reachable == false && light.manufacturername != "OSRAM" && WinHueSettings.settings.OSRAMFix) return false;
-                if (light.state.on == false && WinHueSettings.settings.SlidersBehavior == 0) return false;
-                return SupportedDeviceType.DeviceType.ContainsKey(light.type) && SupportedDeviceType.DeviceType[light.type].Canct;
+                case Light light when light.state.reachable == false && light.manufacturername != "OSRAM" && WinHueSettings.settings.OSRAMFix:
+                    return false;
+                case Light light when light.state.@on == false && WinHueSettings.settings.SlidersBehavior == 0:
+                    return false;
+                case Light light:
+                    return SupportedDeviceType.DeviceType.ContainsKey(light.type) && SupportedDeviceType.DeviceType[light.type].Canct;
+                case Group group:
+                    return @group.action?.ct != null;
+                default:
+                    return false;
             }
-            else if (SelectedHueObject is Group)
-            {
-                return ((Group)SelectedHueObject).action?.ct != null;
-            }
-            return false;
         }
 
         private bool CanSat()
         {
             if (!IsObjectSelected()) return false;
-            if (SelectedHueObject is Light light)
+            switch (SelectedObject)
             {
-                if (light.state.reachable == false && light.manufacturername != "OSRAM" && WinHueSettings.settings.OSRAMFix) return false;
-                if (light.state.on == false && WinHueSettings.settings.SlidersBehavior == 0) return false;
-                return SupportedDeviceType.DeviceType.ContainsKey(light.type) && SupportedDeviceType.DeviceType[light.type].Cansat;
+                case Light light when light.state.reachable == false && light.manufacturername != "OSRAM" && WinHueSettings.settings.OSRAMFix:
+                    return false;
+                case Light light when light.state.@on == false && WinHueSettings.settings.SlidersBehavior == 0:
+                    return false;
+                case Light light:
+                    return SupportedDeviceType.DeviceType.ContainsKey(light.type) && SupportedDeviceType.DeviceType[light.type].Cansat;
+                case Group _:
+                    return ((Group)SelectedObject).action?.sat != null;
+                default:
+                    return false;
             }
-            else if (SelectedHueObject is Group)
-            {
-                return ((Group)SelectedHueObject).action?.sat != null;
-            }
-            return false;
         }
 
         private bool CanXy()
         {
             if (!IsObjectSelected()) return false;
-            if (SelectedHueObject is Light light)
+            switch (SelectedObject)
             {
-                if (light.state.reachable == false && light.manufacturername != "OSRAM" && WinHueSettings.settings.OSRAMFix) return false;
-                if (light.state.on == false && WinHueSettings.settings.SlidersBehavior == 0) return false;
-                return SupportedDeviceType.DeviceType.ContainsKey(light.type) && SupportedDeviceType.DeviceType[light.type].Canxy;
+                case Light light when light.state.reachable == false && light.manufacturername != "OSRAM" && WinHueSettings.settings.OSRAMFix:
+                    return false;
+                case Light light when light.state.@on == false && WinHueSettings.settings.SlidersBehavior == 0:
+                    return false;
+                case Light light:
+                    return SupportedDeviceType.DeviceType.ContainsKey(light.type) && SupportedDeviceType.DeviceType[light.type].Canxy;
+                case Group group:
+                    return @group.action?.xy != null;
+                default:
+                    return false;
             }
-            else if (SelectedHueObject is Group)
-            {
-                return ((Group)SelectedHueObject).action?.xy != null;
-            }
-            return false;
         }
 
         private bool IsDoubleClickable()
         {
-            return SelectedHueObject is Light || SelectedHueObject is Group || SelectedHueObject is Scene;
+            return SelectedObject is Light || SelectedObject is Group || SelectedObject is Scene;
         }
 
         private bool CanIdentify()
         {
-            if (SelectedHueObject is Group) return true;
-            if (SelectedHueObject is Light light)
+            switch (SelectedObject)
             {
-                return SupportedDeviceType.DeviceType.ContainsKey(light.type) && SupportedDeviceType.DeviceType[light.type].Canalert;
+                case Group _:
+                    return true;
+                case Light light:
+                    return SupportedDeviceType.DeviceType.ContainsKey(light.type) && SupportedDeviceType.DeviceType[light.type].Canalert;
+                default:
+                    return false;
             }
-            return false;
         }
 
         private bool CanSetSensivity()
         {
-            if (!(SelectedHueObject is Sensor)) return false;
-
-            return ((Sensor) SelectedHueObject).type == "ZLLPresence";
+            return SelectedObject is Sensor sensor && sensor.type == "ZLLPresence";
         }
 
         private bool CanReplaceState()
         {
             if (!IsObjectSelected()) return false;
-            return SelectedHueObject is Scene;
+            return SelectedObject is Scene;
         }
 
         private bool CanCloneSensor()
         {
-            if (SelectedHueObject is Sensor)
-            {
-                return ((Sensor) SelectedHueObject).type.Contains("CLIP");
-            }
-            return false;
+            return SelectedObject is Sensor && ((Sensor) SelectedObject).type.Contains("CLIP");
         }
 
         private bool CanClone()
         {
             if (!IsObjectSelected()) return false;
-            return SelectedHueObject is Scene | SelectedHueObject is Group | SelectedHueObject is Rule | CanCloneSensor() | SelectedHueObject is Resourcelink;
+            return SelectedObject is Scene | SelectedObject is Group | SelectedObject is Rule | CanCloneSensor() | SelectedObject is Resourcelink;
         }
 
         private bool CanRename()
@@ -257,38 +201,39 @@ namespace WinHue3.MainForm
 
         private bool IsGroupZero()
         {
-            return SelectedHueObject is Group && SelectedHueObject.Id == "0";
+            return SelectedObject is Group group && group.Id == "0";
         }
 
         private bool CanUpdateBridge()
         {
             if (!EnableButtons()) return false;
-            if (_selectedBridge == null) return false;
-            return SelectedBridge.UpdateAvailable;
+            return SelectedBridge != null && SelectedBridge.UpdateAvailable;
         }
 
         private bool CanStrobe()
         {
-            return SelectedHueObject is Light || SelectedHueObject is Group;
+            return SelectedObject is Light || SelectedObject is Group;
         }
 
         private bool CanToggleDim()
         {
             if (!IsObjectSelected()) return false;
-            if (!(SelectedHueObject is Light || SelectedHueObject is Group)) return false;
-            return true;
+            return SelectedObject is Light || SelectedObject is Group;
         }
 
         private bool CanSetSensorStatus()
         {
-            if (!(SelectedHueObject is Sensor)) return false;
-            return ((Sensor)SelectedHueObject).type == "CLIPGenericStatus";
+            return SelectedObject is Sensor sensor && sensor.type == "CLIPGenericStatus";
         }
 
         private bool CanSetSensorFlag()
         {
-            if (!(SelectedHueObject is Sensor)) return false;
-            return ((Sensor)SelectedHueObject).type == "CLIPGenericFlag";
+            return SelectedObject is Sensor sensor && sensor.type == "CLIPGenericFlag";
+        }
+
+        private bool CanStream()
+        {
+            return SelectedObject is Group group && group.type == "Entertainment";
         }
 
         //*************** MainMenu Commands ********************        
@@ -305,7 +250,7 @@ namespace WinHue3.MainForm
         public ICommand UpdateBridgeCommand => new AsyncRelayCommand(param => DoBridgeUpdate(), param => CanUpdateBridge());
         public ICommand ManageUsersCommand => new AsyncRelayCommand(param => ManageUsers(),  param => EnableButtons());
         public ICommand ChangeBridgeSettingsCommand => new AsyncRelayCommand(param => ChangeBridgeSettings(), param => CanBridgeSettings());
-        public ICommand RefreshViewCommand => new AsyncRelayCommand(param => RefreshView(), param => EnableButtons());
+        public ICommand RefreshViewCommand => new AsyncRelayCommand(param => RefreshCurrentListHueObject(), param => EnableButtons());
         public ICommand CreateGroupCommand => new AsyncRelayCommand(param => CreateGroup(), param => EnableButtons());
         public ICommand CreateSceneCommand => new AsyncRelayCommand(param => CreateScene(), param => EnableButtons());
         public ICommand CreateScheduleCommand => new AsyncRelayCommand(param => CreateSchedule(), param => EnableButtons());
@@ -313,15 +258,17 @@ namespace WinHue3.MainForm
         public ICommand CreateSensorCommand => new RelayCommand(param => CreateSensor(), param => EnableButtons());
         public ICommand CreateAdvancedCommand => new RelayCommand(param => CreateAdvanced(),  param => EnableButtons());
         public ICommand CreateFloorPlanCommand => new RelayCommand(param => CreateFloorPlan(), (param)=> EnableButtons());
-        public ICommand CreateEntertainmentCommand => new RelayCommand(param => CreateEntertainment(),  param => EnableButtons());
+        public ICommand CreateEntertainmentCommand => new AsyncRelayCommand(param => CreateEntertainment(),  param => EnableButtons());
+
+        public ICommand CreateMqttConditionCommand => new RelayCommand(param => CreateMqttConditions(), param => EnableButtons());
 
         public ICommand CreateAnimationCommand => new RelayCommand(param => CreateAnimation());
         public ICommand TouchLinkCommand => new AsyncRelayCommand(param => DoTouchLink(), param => EnableButtons());
         public ICommand FindLightSerialCommand => new RelayCommand(param => FindLightSerial(), (param) => EnableButtons());
         public ICommand CreateHotKeyCommand => new AsyncRelayCommand(param => CreateHotKey(), param => EnableButtons());
         public ICommand CreateResourceLinkCommand => new AsyncRelayCommand(param => CreateResourceLink(), param => EnableButtons());
-        public ICommand AllOnCommand => new AsyncRelayCommand(param => AllOn(), param => EnableButtons());
-        public ICommand AllOffCommand => new AsyncRelayCommand(param => AllOff(), param => EnableButtons());
+        public ICommand AllOnCommand => new AsyncRelayCommand(param => AllOnOff(true), param => EnableButtons());
+        public ICommand AllOffCommand => new AsyncRelayCommand(param => AllOnOff(false), param => EnableButtons());
         public ICommand ShowEventLogCommand => new RelayCommand(param => ShowEventLog());
         public ICommand SearchNewLightsCommand => new AsyncRelayCommand(param => CheckForNewBulb(), param => CanSearchNewLights());
         public ICommand SearchNewSensorsCommand => new AsyncRelayCommand(param => SearchNewSensors(), param => CanSearchNewSensor());
@@ -338,7 +285,7 @@ namespace WinHue3.MainForm
         public ICommand CtKeyPressCommand => new AsyncRelayCommand(SliderChangeCtKeypress);
 
         //*************** App Menu Commands ******************
-        public ICommand DoBridgePairingCommand => new RelayCommand(param => DoBridgePairing(ListBridges));
+        public ICommand DoBridgePairingCommand => new RelayCommand(param => DoBridgePairing());
         public ICommand ExportDataStoreCommand => new AsyncRelayCommand(ExportDataStore, param => EnableButtons());
 
         //*************** Context Menu Commands *************
@@ -365,6 +312,7 @@ namespace WinHue3.MainForm
         public ICommand ToggleDim75Command => new AsyncRelayCommand(param => OnDim(191), param => CanToggleDim());
         public ICommand SetSensorStatusCommand => new AsyncRelayCommand(param => SetSensorStatus(), param => CanSetSensorStatus());
         public ICommand SetSensorFlagCommand => new AsyncRelayCommand(param => SetSensorFlag(), param => CanSetSensorFlag());
+        public ICommand EnableStreamCommand => new AsyncRelayCommand(param => EnableStreaming(), (param) => CanStream());
 
         //*************** ListView Commands ********************
         public ICommand DoubleClickObjectCommand => new AsyncRelayCommand(param => DoubleClickObject(), param => IsDoubleClickable());
@@ -376,14 +324,16 @@ namespace WinHue3.MainForm
         public ICommand ViewGroupsCommand => new AsyncRelayCommand(param => ViewGroups(), param => EnableButtons());
         public ICommand SortListViewCommand => new AsyncRelayCommand(param => SortListView(), param => EnableButtons());
         public ICommand ShowPropertyGridCommand => new RelayCommand(param => ShowPropertyGrid());
+
+        public ICommand SwitchViewCommandIcon => new RelayCommand(param => SwitchView(1));
+        public ICommand SwitchViewCommandList => new RelayCommand(param => SwitchView(2));
         //*************** StatusBar Commands ************************
         public ICommand ChangeBridgeCommand => new AsyncRelayCommand(param => ChangeBridge());
         public ICommand DoAppUpdateCommand=> new RelayCommand(param => DoAppUpdate());
         //*************** Toolbar ******************************
         public ICommand CpuTempMonCommand => new RelayCommand(param => RunCpuTempMon(), (param) => EnableButtons() && CanRunTempPlugin);
         public ICommand CpuTempMonSettingsCommand => new RelayCommand(param => CpuTempMonSettings(), (param) => EnableButtons() && CanRunTempPlugin);
-        public ICommand RssFeedMonCommand => new RelayCommand(param => RssFeedMon(), (param) => EnableButtons());
-        public ICommand RssFeedMonSettingsCommand => new RelayCommand(param => RssFeedMonSettings(), (param) => EnableButtons());
+
         //*************** Help ******************************
         public ICommand OpenWinHueWebsiteCommand => new RelayCommand(param => OpenWinHueWebsite());
         public ICommand OpenWinHueSupportCommand => new RelayCommand(param => OpenWinHueSupport());
@@ -396,11 +346,7 @@ namespace WinHue3.MainForm
 
         public ICommand SelectHueElementCommand => new AsyncRelayCommand(param => SelectHueElement());
         public ICommand SelectedFloorPlanChangedCommand => new RelayCommand(param => SelectedFloorPlanChanged());
-        public ICommand SetPowerModeCommand => new RelayCommand(param => SetPowerMode(), (param) => EnableButtons());
+        public ICommand SetPowerModeCommand => new AsyncRelayCommand(param => SetPowerMode(), (param) => EnableButtons());
 
-        //      public ICommand RssFeedMonCommand => new RelayCommand(param => RunRssFeedMon(),  EnableButtons());
-        //      
-        //     public ICommand RssFeedMonSettingsCommand => new RelayCommand(param => RssFeedMonSettings(),  EnableButtons());
-        //   public ICommand ClapperCommand => new RelayCommand(param => Clapper(),  EnableButtons());
     }
 }

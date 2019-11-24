@@ -3,7 +3,6 @@ using System.Threading.Tasks;
 using System.Windows;
 using WinHue3.Philips_Hue.BridgeObject;
 using WinHue3.Philips_Hue.HueObjects.LightObject;
-using WinHue3.Utils;
 
 namespace WinHue3.Functions.Lights.View
 {
@@ -14,7 +13,6 @@ namespace WinHue3.Functions.Lights.View
     {
         private BulbsViewViewModel _bvv;
         private Bridge _bridge;
-
         public Form_BulbsView()
         {
             InitializeComponent();
@@ -24,7 +22,7 @@ namespace WinHue3.Functions.Lights.View
         public async Task Initialize(Bridge bridge)
         {
             _bridge = bridge;
-            List<Light> lresult = await HueObjectHelper.GetBridgeLightsAsyncTask(_bridge);
+            List<Light> lresult = await _bridge.GetListObjectsAsync<Light>();
             if (lresult == null) return;
             _bvv.Initialize(lresult);
         }

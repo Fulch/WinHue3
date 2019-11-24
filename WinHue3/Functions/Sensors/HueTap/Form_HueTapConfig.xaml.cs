@@ -5,7 +5,6 @@ using System.Windows;
 using WinHue3.Functions.Application_Settings.Settings;
 using WinHue3.Philips_Hue.BridgeObject;
 using WinHue3.Philips_Hue.HueObjects.SceneObject;
-using WinHue3.Utils;
 
 namespace WinHue3.Functions.Sensors.HueTap
 {
@@ -14,8 +13,8 @@ namespace WinHue3.Functions.Sensors.HueTap
     /// </summary>
     public partial class Form_HueTapConfig : Window
     {
+        private HueTapConfigViewModel tcvm;
         private Bridge _bridge;
-        HueTapConfigViewModel tcvm;
         public Form_HueTapConfig()
         {
 
@@ -23,13 +22,13 @@ namespace WinHue3.Functions.Sensors.HueTap
             tcvm = DataContext as HueTapConfigViewModel;  
         }
 
-        public async Task Initialize(string sensorid, Bridge bridge)
+        public async Task Initialize(Bridge bridge,string sensorid)
         {
             _bridge = bridge;
-            tcvm.Bridge = bridge;
+            tcvm.Initialize(_bridge);
             tcvm.HueTapModel.Id = sensorid;
 
-            List<Scene> hr = await HueObjectHelper.GetBridgeScenesAsyncTask(_bridge);
+            List<Scene> hr = await _bridge.GetListObjectsAsync<Scene>();
 
             if (hr != null)
             {

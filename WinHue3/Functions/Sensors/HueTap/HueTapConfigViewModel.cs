@@ -12,8 +12,8 @@ namespace WinHue3.Functions.Sensors.HueTap
 {
     public class HueTapConfigViewModel : ValidatableBindableBase
     {
-        private readonly System.Windows.Media.Color _selectedColor = System.Windows.Media.Color.FromArgb(128, 255, 0, 0);
-        private readonly System.Windows.Media.Color _deselectedColor = System.Windows.Media.Color.FromArgb(0, 0, 0, 0);
+        private readonly Color _selectedColor = Color.FromArgb(128, 255, 0, 0);
+        private readonly Color _deselectedColor = Color.FromArgb(0, 0, 0, 0);
         private Scene _selectedScene;
         private Bridge _bridge;
 
@@ -22,6 +22,11 @@ namespace WinHue3.Functions.Sensors.HueTap
         public HueTapConfigViewModel()
         {
             _huetapmodel = new HueTapModel();
+        }
+
+        public void Initialize(Bridge bridge)
+        {
+            _bridge = bridge;
         }
 
         public bool CanSave => HueTapModel.Buttonid != string.Empty && SelectedScene != null;
@@ -133,10 +138,6 @@ namespace WinHue3.Functions.Sensors.HueTap
             set { SetProperty(ref _selectedScene,value); RaisePropertyChanged("CanSave"); }
         }
 
-        public Bridge Bridge
-        {
-            get => _bridge;
-            set => SetProperty(ref _bridge,value);
-        }
+
     }
 }

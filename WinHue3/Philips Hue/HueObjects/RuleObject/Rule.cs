@@ -2,7 +2,7 @@
 using System.Runtime.Serialization;
 using System.Windows.Media;
 using Newtonsoft.Json;
-using WinHue3.Philips_Hue.Communication;
+using WinHue3.Interface;
 using WinHue3.Philips_Hue.HueObjects.Common;
 using WinHue3.Utils;
 using Xceed.Wpf.Toolkit.PropertyGrid.Attributes;
@@ -12,7 +12,7 @@ namespace WinHue3.Philips_Hue.HueObjects.RuleObject
     /// <summary>
     /// Rules.
     /// </summary>
-    [DataContract, HueType("rules"), JsonConverter(typeof(RuleJsonConverter))]
+    [DataContract, /*JsonConverter(typeof(RuleJsonConverter))*/]
     public class Rule : ValidatableBindableBase, IHueObject
     {
         private string _name;
@@ -50,7 +50,7 @@ namespace WinHue3.Philips_Hue.HueObjects.RuleObject
         /// <summary>
         /// name.
         /// </summary>
-        [HueProperty, DataMember, Category("Rule Properties"), Description("Name of the rule")]
+        [DataMember, Category("Rule Properties"), Description("Name of the rule")]
         public string name
         {
             get => _name;
@@ -60,7 +60,7 @@ namespace WinHue3.Philips_Hue.HueObjects.RuleObject
         /// <summary>
         /// Conditions.
         /// </summary>
-        [HueProperty, DataMember, Category("Conditions"), Description("Conditions of the rule"), ExpandableObject]
+        [DataMember, Category("Conditions"), Description("Conditions of the rule"), ExpandableObject]
         public RuleConditionCollection conditions
         {
             get => _conditions;
@@ -70,7 +70,7 @@ namespace WinHue3.Philips_Hue.HueObjects.RuleObject
         /// <summary>
         /// actions.
         /// </summary>
-        [HueProperty, DataMember, Category("Actions"), Description("Actions of the rule"), ExpandableObject]
+        [DataMember, Category("Actions"), Description("Actions of the rule"), ExpandableObject]
         public RuleActionCollection actions
         {
             get => _actions;
@@ -80,7 +80,7 @@ namespace WinHue3.Philips_Hue.HueObjects.RuleObject
         /// <summary>
         /// Owner of the rule.
         /// </summary>
-        [HueProperty, DataMember(EmitDefaultValue = false, IsRequired = false), Category("Rule Properties"),Description("Owner of the rule"), ReadOnly(true)]
+        [DataMember(EmitDefaultValue = false, IsRequired = false), Category("Rule Properties"),Description("Owner of the rule"), ReadOnly(true), DontSerialize]
         public string owner
         {
             get => _owner;
@@ -90,7 +90,7 @@ namespace WinHue3.Philips_Hue.HueObjects.RuleObject
         /// <summary>
         /// Number of time triggered.
         /// </summary>
-        [HueProperty, DataMember(EmitDefaultValue = false, IsRequired = false), Category("Rule Properties"),Description("Number of times the rule has been triggered"), ReadOnly(true), JsonIgnore]
+        [DataMember(EmitDefaultValue = false, IsRequired = false), Category("Rule Properties"),Description("Number of times the rule has been triggered"), ReadOnly(true)]
         public int? timestriggered
         {
             get => _timestriggered;
@@ -100,7 +100,7 @@ namespace WinHue3.Philips_Hue.HueObjects.RuleObject
         /// <summary>
         /// Last time the rule was triggered
         /// </summary>
-        [HueProperty, DataMember(EmitDefaultValue = false, IsRequired = false), Category("Rule Properties"),Description("Last time the rule was triggered"), ReadOnly(true), JsonIgnore]
+        [DataMember(EmitDefaultValue = false, IsRequired = false), Category("Rule Properties"),Description("Last time the rule was triggered"), ReadOnly(true)]
         public string lasttriggered
         {
             get => _lasttriggered;
@@ -110,7 +110,7 @@ namespace WinHue3.Philips_Hue.HueObjects.RuleObject
         /// <summary>
         /// Date of creation.
         /// </summary>
-        [HueProperty, DataMember(EmitDefaultValue = false, IsRequired = false), Category("Rule Properties"),Description("Date of creation"), ReadOnly(true), JsonIgnore]
+        [DataMember(EmitDefaultValue = false, IsRequired = false), Category("Rule Properties"),Description("Date of creation"), ReadOnly(true)]
         public string created
         {
             get => _created;
@@ -120,7 +120,7 @@ namespace WinHue3.Philips_Hue.HueObjects.RuleObject
         /// <summary>
         /// Enabled.
         /// </summary>
-        [HueProperty, DataMember(EmitDefaultValue = false, IsRequired = false), Category("Rule Properties"),Description("Current status of the rule")]
+        [DataMember(EmitDefaultValue = false, IsRequired = false), Category("Rule Properties"),Description("Current status of the rule")]
         public string status
         {
             get => _status;
@@ -130,8 +130,14 @@ namespace WinHue3.Philips_Hue.HueObjects.RuleObject
         [DataMember(EmitDefaultValue = false, IsRequired = false), ReadOnly(true), JsonIgnore, Browsable(false)]
         public bool visible
         {
-            get { return _visible; }
-            set { SetProperty(ref _visible,value); }
+            get => _visible;
+            set => SetProperty(ref _visible,value);
+        }
+
+        [OnDeserialized]
+        private void OnDeserialized(StreamingContext ctx)
+        {
+            Image = GDIManager.CreateImageSourceFromImage(Properties.Resources.rules);
         }
 
         /// <summary>
@@ -140,14 +146,23 @@ namespace WinHue3.Philips_Hue.HueObjects.RuleObject
         /// <returns></returns>
         public override string ToString()
         {
-            return Serializer.SerializeToJson(this);
+            return name;
 
         }
-
 
         public object Clone()
         {
             return MemberwiseClone();
+        }
+
+        public override bool Equals(object obj)
+        {
+            return obj is Rule hueobject && hueobject.Id == Id;
+        }
+
+        public override int GetHashCode()
+        {
+            return base.GetHashCode();
         }
     }
 }
